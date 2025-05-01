@@ -128,10 +128,10 @@ namespace MyGallery.Api.Controllers
                 {
                     Directory.CreateDirectory(uploadsPath);
                 }
-                //hhhh
 
 
                 // Generate unique filename
+                //hhhh
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(updatePhotoDto.ImageFile.FileName)}";
                 var filePath = Path.Combine(uploadsPath, fileName);
 
