@@ -1,4 +1,6 @@
-﻿namespace MyGallery.Api.DTOs
+﻿using Microsoft.AspNetCore.Http;
+
+namespace MyGallery.Api.DTOs
 {
     public record PhotoDTO(
         int Id,

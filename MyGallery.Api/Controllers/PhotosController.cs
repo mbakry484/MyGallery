@@ -5,18 +5,22 @@ using MyGallery.Api.DTOs;
 using MyGallery.Api.Entities;
 using MyGallery.Api.Mapping;
 using System;
+using System.IO;
+using Microsoft.AspNetCore.Http;
+
 namespace MyGallery.Api.Controllers
 {
-
     [ApiController]
     [Route("api/[controller]")]
     public class PhotosController : ControllerBase
     {
         private readonly MyGalleryContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public PhotosController(MyGalleryContext context)
+        public PhotosController(MyGalleryContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         [HttpGet]
@@ -32,17 +36,43 @@ namespace MyGallery.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<PhotoDTO>> CreatePhoto(CreatePhotoDTO newPhoto)
+        public async Task<ActionResult<PhotoDTO>> CreatePhoto([FromForm] CreatePhotoDTO newPhoto)
         {
-            // Verify the category exists before creating the photo
+            if (newPhoto.ImageFile == null || newPhoto.ImageFile.Length == 0)
+            {
+                return BadRequest("No file was uploaded");
+            }
+
+            // Verify the category exists
             var categoryExists = await _context.Category.AnyAsync(c => c.Id == newPhoto.CategoryId);
             if (!categoryExists)
             {
                 return BadRequest($"Category with ID {newPhoto.CategoryId} does not exist");
             }
 
-            // Convert DTO to entity
-            Photo photo = newPhoto.ToEntity();
+            // Create uploads directory if it doesn't exist
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            // Generate unique filename
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(newPhoto.ImageFile.FileName)}";
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            // Save the file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await newPhoto.ImageFile.CopyToAsync(stream);
+            }
+
+            // Create photo entity
+            var photo = new Photo
+            {
+                ImageUrl = $"/uploads/{fileName}",
+                CategoryId = newPhoto.CategoryId
+            };
 
             // Add to database
             _context.Photo.Add(photo);
@@ -73,7 +103,7 @@ namespace MyGallery.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PhotoDTO>> UpdatePhoto(int id, UpdatePhotoDTO updatePhotoDto)
+        public async Task<ActionResult<PhotoDTO>> UpdatePhoto(int id, [FromForm] UpdatePhotoDTO updatePhotoDto)
         {
             // Verify the photo exists
             var photo = await _context.Photo.FindAsync(id);
@@ -89,8 +119,31 @@ namespace MyGallery.Api.Controllers
                 return BadRequest($"Category with ID {updatePhotoDto.CategoryId} does not exist");
             }
 
-            // Update photo
-            photo.ImageUrl = updatePhotoDto.ImageUrl;
+            // If a new file was uploaded
+            if (updatePhotoDto.ImageFile != null && updatePhotoDto.ImageFile.Length > 0)
+            {
+                // Create uploads directory if it doesn't exist
+                var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsPath))
+                {
+                    Directory.CreateDirectory(uploadsPath);
+                }
+
+                // Generate unique filename
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(updatePhotoDto.ImageFile.FileName)}";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                // Save the file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await updatePhotoDto.ImageFile.CopyToAsync(stream);
+                }
+
+                // Update the image URL
+                photo.ImageUrl = $"/uploads/{fileName}";
+            }
+
+            // Update category
             photo.CategoryId = updatePhotoDto.CategoryId;
             await _context.SaveChangesAsync();
 

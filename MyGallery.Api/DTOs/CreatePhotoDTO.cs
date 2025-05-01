@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace MyGallery.Api.DTOs
 {
     public record class CreatePhotoDTO(
-        [Required] string ImageUrl,
+        [Required] IFormFile ImageFile,
         int CategoryId
-
-        );
-   
+    );
 }

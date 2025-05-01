@@ -1,6 +1,7 @@
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using MyGallery.Api.Data;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("MyGallery");
@@ -10,6 +11,12 @@ builder.Services.AddSqlite<MyGalleryContext>(connString);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
+
+// Configure file upload settings
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10485760; // 10MB limit
+});
 
 // Add CORS support
 builder.Services.AddCors(options =>
@@ -38,7 +45,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
-//hi
+
 // Apply migrations and seed data at startup
 using (var scope = app.Services.CreateScope())
 {
@@ -56,9 +63,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyGallery API v1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at the root
+        c.RoutePrefix = "swagger";
     });
 }
+
+// Ensure wwwroot directory exists
+var wwwrootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(wwwrootPath))
+{
+    Directory.CreateDirectory(wwwrootPath);
+}
+
+// Enable serving static files
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 // Map controllers
 app.MapControllers();

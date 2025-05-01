@@ -4,12 +4,11 @@ namespace MyGallery.Api.Mapping
 {
     public static class PhotoMapping
     {
-        public static Photo ToEntity(this CreatePhotoDTO createPhotoDTO)
+        public static Photo ToEntity(this CreatePhotoDTO photo)
         {
             return new Photo
             {
-                ImageUrl = createPhotoDTO.ImageUrl,
-                CategoryId = createPhotoDTO.CategoryId
+                CategoryId = photo.CategoryId
             };
         }
 
@@ -19,7 +18,7 @@ namespace MyGallery.Api.Mapping
                 photo.Id,
                 photo.ImageUrl,
                 photo.CategoryId,
-                photo.Category?.Name ?? "Unknown Category"
+                photo.Category?.Name ?? string.Empty
             );
         }
     }
