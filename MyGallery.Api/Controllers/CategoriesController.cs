@@ -16,7 +16,6 @@ namespace MyGallery.Api.Controllers
         {
             _context = context;
         }
-        //khgjg
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {

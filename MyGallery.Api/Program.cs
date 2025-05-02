@@ -44,6 +44,10 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath);
 });
 
+//Admin Login
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession();
 var app = builder.Build();
 
 // Apply migrations and seed data at startup
@@ -55,6 +59,8 @@ using (var scope = app.Services.CreateScope())
 
 // Enable CORS
 app.UseCors();
+
+app.UseSession();
 
 
 
@@ -102,6 +108,8 @@ app.UseEndpoints(endpoints =>
         context.Response.Redirect("/");
         return Task.CompletedTask;
     });
+
+
 });
 
 app.Run();
