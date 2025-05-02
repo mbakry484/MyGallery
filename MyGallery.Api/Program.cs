@@ -56,6 +56,9 @@ using (var scope = app.Services.CreateScope())
 // Enable CORS
 app.UseCors();
 
+
+
+//5
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
