@@ -24,12 +24,18 @@ namespace MyGallery.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PhotoDTO>>> GetAllPhotos()
+        public async Task<ActionResult<IEnumerable<PhotoDTO>>> GetAllPhotos([FromQuery] int? categoryId = null)
         {
-            var photos = await _context.Photo
-                .Include(p => p.Category)
-                .ToListAsync();
+            IQueryable<Photo> query = _context.Photo;
 
+            // Filter by category if categoryId is provided
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            // Include category information after filtering
+            var photos = await query.Include(p => p.Category).ToListAsync();
             var photoDTOs = photos.Select(p => p.ToPhotoDTO());
 
             return Ok(photoDTOs);

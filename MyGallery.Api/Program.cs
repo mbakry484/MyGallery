@@ -67,19 +67,39 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Ensure wwwroot directory exists
+app.UseHttpsRedirection();
+
+// Ensure wwwroot and uploads directories exist
 var wwwrootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+var uploadsPath = Path.Combine(wwwrootPath, "uploads");
 if (!Directory.Exists(wwwrootPath))
 {
     Directory.CreateDirectory(wwwrootPath);
+}
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
 }
 
 // Enable serving static files
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// Map controllers
-app.MapControllers();
+// Add MVC routing
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+
+    // Redirect /index.html to /
+    endpoints.MapGet("/index.html", context =>
+    {
+        context.Response.Redirect("/");
+        return Task.CompletedTask;
+    });
+});
 
 app.Run();
 
