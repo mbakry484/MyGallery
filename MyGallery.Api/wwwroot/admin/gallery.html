@@ -41,18 +41,20 @@
       }
       .hero-section {
         text-align: center;
-        padding: 4rem 0 2rem 0;
+        padding: 5rem 0 3rem 0;
         background-color: #fff;
       }
       .hero-section h1 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
         color: #333;
       }
       .hero-section p {
         color: #6c757d;
-        max-width: 600px;
+        max-width: 800px;
         margin: 0 auto;
+        font-size: 1.25rem;
+        line-height: 1.6;
       }
       .nav-links {
         margin-bottom: 2rem;
@@ -67,13 +69,13 @@
         color: #6610f2;
       }
       .featured-gallery {
-        padding: 0 0 4rem 0;
+        padding: 2rem 0 4rem 0;
       }
       .featured-gallery .row {
-        margin: -8px;
+        margin: -10px;
       }
       .featured-gallery .col {
-        padding: 8px;
+        padding: 10px;
       }
       .featured-gallery img {
         width: 100%;
@@ -102,7 +104,7 @@
       .category-card {
         background: #f8f9fa;
         border-radius: 12px;
-        padding: 2rem;
+        padding: 2.5rem 2rem;
         text-align: center;
         transition: transform 0.3s ease;
         cursor: pointer;
@@ -113,14 +115,14 @@
         transform: translateY(-5px);
       }
       .category-icon {
-        font-size: 2.5rem;
+        font-size: 2rem;
         margin-bottom: 1rem;
         color: #6610f2;
       }
       .category-card h3 {
         margin: 0;
         color: #333;
-        font-size: 1.25rem;
+        font-size: 1.5rem;
       }
       .contact-form {
         padding: 4rem 0;
@@ -142,22 +144,24 @@
         border-bottom: 2px solid #6610f2;
       }
       .photo-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
         padding: 2rem 0;
+        /* Grid layout is set through JavaScript */
       }
       .photo-item {
         position: relative;
         overflow: hidden;
         border-radius: 8px;
         cursor: pointer;
+        margin-bottom: 2rem;
+        break-inside: avoid;
+        background-color: #f8f9fa;
       }
       .photo-item img {
         width: 100%;
-        height: 300px;
-        object-fit: cover;
+        height: auto;
+        border-radius: 8px;
         transition: transform 0.3s ease;
+        display: block;
       }
       .photo-item:hover img {
         transform: scale(1.05);
@@ -239,7 +243,7 @@
         background-color: rgba(0, 0, 0, 0.9);
         backdrop-filter: blur(8px);
         z-index: 1000;
-        padding: 2rem;
+        padding: 0;
       }
       .lightbox.active {
         display: flex;
@@ -250,22 +254,37 @@
         position: relative;
         max-width: 90%;
         max-height: 90%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       .lightbox-img {
         max-width: 100%;
-        max-height: 80vh;
+        max-height: 90vh;
+        object-fit: contain;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         border-radius: 4px;
+        margin: 0 auto;
       }
       .close-lightbox {
         position: absolute;
-        top: -2rem;
-        right: 0;
+        top: 20px;
+        right: 20px;
         color: white;
-        background: none;
+        background: rgba(0, 0, 0, 0.5);
         border: none;
         font-size: 1.5rem;
         cursor: pointer;
+        z-index: 1003;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .close-lightbox:hover {
+        background: rgba(255, 255, 255, 0.2);
       }
       .photo-nav {
         position: absolute;
@@ -274,20 +293,24 @@
         background: rgba(255, 255, 255, 0.2);
         color: white;
         border: none;
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         font-size: 1.25rem;
+        z-index: 1002;
+      }
+      .photo-nav:hover {
+        background: rgba(255, 255, 255, 0.3);
       }
       .prev-photo {
-        left: -3.5rem;
+        left: 20px;
       }
       .next-photo {
-        right: -3.5rem;
+        right: 20px;
       }
 
       /* Admin styles */
@@ -432,6 +455,10 @@
         cursor: pointer;
         color: #dc3545;
       }
+
+      .container {
+        max-width: 1400px; /* Increased from default 1200px */
+      }
     </style>
   </head>
   <body>
@@ -479,13 +506,13 @@
       <section id="gallery" class="featured-gallery">
         <div class="container">
           <div class="admin-header">
-            <h2>Categories</h2>
+            <h2 style="font-size: 2.5rem">Categories</h2>
             <button id="addCategoryBtn" onclick="openAddCategoryModal()">
               <i class="fas fa-plus"></i> Add Category
             </button>
           </div>
           <div
-            class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4"
+            class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
             id="categoriesContainer"
           >
             <!-- Categories will be loaded here -->
@@ -512,7 +539,13 @@
         </nav>
 
         <div class="admin-header">
-          <h2 class="gallery-title" id="categoryTitle">Category Photos</h2>
+          <h2
+            class="gallery-title"
+            id="categoryTitle"
+            style="font-size: 2.5rem"
+          >
+            Category Photos
+          </h2>
           <button id="addPhotoBtn" onclick="openAddPhotoModal()">
             <i class="fas fa-plus"></i> Add Photo
           </button>
@@ -609,6 +642,15 @@
       // Initialize the app
       document.addEventListener("DOMContentLoaded", function () {
         loadCategories();
+
+        // Add resize handler for responsive columns
+        window.addEventListener("resize", function () {
+          if (currentPhotos.length > 0) {
+            const container = document.getElementById("photosContainer");
+            container.style.columnCount =
+              window.innerWidth > 1400 ? 3 : window.innerWidth > 900 ? 2 : 1;
+          }
+        });
       });
 
       // Load categories
@@ -691,6 +733,11 @@
         const container = document.getElementById("photosContainer");
         container.innerHTML = "";
 
+        // Create masonry-like layout for photos
+        container.style.columnCount =
+          window.innerWidth > 1400 ? 3 : window.innerWidth > 900 ? 2 : 1;
+        container.style.columnGap = "2rem";
+
         currentPhotos.forEach((photo, index) => {
           const photoItem = document.createElement("div");
           photoItem.className = "photo-item";
@@ -726,11 +773,21 @@
         const lightboxImg = document.getElementById("lightboxImg");
 
         lightboxImg.src = currentPhotos[index].imageUrl;
-        lightbox.classList.add("active");
+        lightboxImg.style.objectFit = "contain";
+
+        // Ensure image is centered
+        setTimeout(() => {
+          lightbox.classList.add("active");
+        }, 50); // Small delay to ensure image loads properly
+
+        // Prevent scrolling
+        document.body.style.overflow = "hidden";
       }
 
       function closeLightbox() {
         document.getElementById("lightbox").classList.remove("active");
+        // Restore scrolling
+        document.body.style.overflow = "";
       }
 
       function nextPhoto() {

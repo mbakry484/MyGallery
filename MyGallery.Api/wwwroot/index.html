@@ -41,18 +41,20 @@
       }
       .hero-section {
         text-align: center;
-        padding: 4rem 0 2rem 0;
+        padding: 5rem 0 3rem 0;
         background-color: #fff;
       }
       .hero-section h1 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
         color: #333;
       }
       .hero-section p {
         color: #6c757d;
-        max-width: 600px;
+        max-width: 800px;
         margin: 0 auto;
+        font-size: 1.25rem;
+        line-height: 1.6;
       }
       .nav-links {
         margin-bottom: 2rem;
@@ -66,14 +68,17 @@
       .nav-links a.active {
         color: #6610f2;
       }
+      .container {
+        max-width: 1400px; /* Increased from default 1200px */
+      }
       .featured-gallery {
-        padding: 0 0 4rem 0;
+        padding: 2rem 0 4rem 0;
       }
       .featured-gallery .row {
-        margin: -8px;
+        margin: -10px;
       }
       .featured-gallery .col {
-        padding: 8px;
+        padding: 10px;
       }
       .featured-gallery img {
         width: 100%;
@@ -102,7 +107,7 @@
       .category-card {
         background: #f8f9fa;
         border-radius: 12px;
-        padding: 2rem;
+        padding: 2.5rem 2rem;
         text-align: center;
         transition: transform 0.3s ease;
         cursor: pointer;
@@ -112,14 +117,14 @@
         transform: translateY(-5px);
       }
       .category-icon {
-        font-size: 2.5rem;
+        font-size: 2rem;
         margin-bottom: 1rem;
         color: #6610f2;
       }
       .category-card h3 {
         margin: 0;
         color: #333;
-        font-size: 1.25rem;
+        font-size: 1.5rem;
       }
       .contact-form {
         padding: 4rem 0;
@@ -141,22 +146,24 @@
         border-bottom: 2px solid #6610f2;
       }
       .photo-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
         padding: 2rem 0;
+        /* Grid layout is set through JavaScript */
       }
       .photo-item {
         position: relative;
         overflow: hidden;
         border-radius: 8px;
         cursor: pointer;
+        margin-bottom: 2rem;
+        break-inside: avoid;
+        background-color: #f8f9fa;
       }
       .photo-item img {
         width: 100%;
-        height: 300px;
-        object-fit: cover;
+        height: auto;
+        border-radius: 8px;
         transition: transform 0.3s ease;
+        display: block;
       }
       .photo-item:hover img {
         transform: scale(1.05);
@@ -175,10 +182,17 @@
       .gallery-title {
         color: #2d3748;
         margin-bottom: 1rem;
+        font-size: 2.5rem;
+        text-align: center;
       }
       .gallery-description {
         color: #718096;
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
+        text-align: center;
+        font-size: 1.2rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
       }
       .filter-tabs {
         margin-bottom: 2rem;
@@ -238,7 +252,7 @@
         background-color: rgba(0, 0, 0, 0.9);
         backdrop-filter: blur(8px);
         z-index: 1000;
-        padding: 2rem;
+        padding: 0;
       }
       .lightbox.active {
         display: flex;
@@ -248,12 +262,18 @@
       .lightbox-content {
         position: relative;
         max-width: 90%;
-        max-height: 90vh;
+        max-height: 90%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       .lightbox-img {
         max-width: 100%;
         max-height: 90vh;
         object-fit: contain;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        margin: 0 auto;
       }
       .lightbox-nav {
         position: absolute;
@@ -271,26 +291,36 @@
         align-items: center;
         justify-content: center;
         transition: background-color 0.3s ease;
+        z-index: 1002;
       }
       .lightbox-nav:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.3);
       }
       .lightbox-prev {
-        left: 1rem;
+        left: 20px;
       }
       .lightbox-next {
-        right: 1rem;
+        right: 20px;
       }
       .lightbox-close {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
+        top: 20px;
+        right: 20px;
         color: white;
-        background: none;
+        background: rgba(0, 0, 0, 0.5);
         border: none;
         font-size: 2rem;
         cursor: pointer;
-        z-index: 1001;
+        z-index: 1003;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .lightbox-close:hover {
+        background: rgba(255, 255, 255, 0.2);
       }
     </style>
   </head>
@@ -317,7 +347,7 @@
               <a
                 class="nav-link"
                 href="#"
-                onclick="showMainView(); scrollToTop(); return false;"
+                onclick="showMainView(); scrollToCategories(); return false;"
                 >Home</a
               >
             </li>
@@ -355,7 +385,9 @@
 
       <section class="py-5" id="categories">
         <div class="container">
-          <h2 class="mb-4">Categories</h2>
+          <h2 class="text-center mb-5" style="font-size: 2.5rem">
+            Photography Categories
+          </h2>
           <div class="row g-4" id="categoriesGrid">
             <!-- Categories will be loaded here -->
           </div>
@@ -398,6 +430,9 @@
 
     <div id="galleryView">
       <div class="container">
+        <a class="back-button" onclick="showMainView()">
+          <i class="fas fa-arrow-left"></i> Back to Categories
+        </a>
         <h1 class="gallery-title" id="galleryTitle"></h1>
         <p class="gallery-description" id="galleryDescription"></p>
 
@@ -466,6 +501,8 @@
           const response = await fetch("/api/Categories");
           const categories = await response.json();
           const categoriesGrid = document.getElementById("categoriesGrid");
+          categoriesGrid.className =
+            "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
 
           const icons = {
             Animals: "fa-paw",
@@ -478,7 +515,7 @@
           categories.forEach((category) => {
             const icon = icons[category.name] || "fa-camera";
             const categoryElement = document.createElement("div");
-            categoryElement.className = "col-md-4 mb-4";
+            categoryElement.className = "col";
             categoryElement.innerHTML = `
               <div class="category-card" onclick="showCategoryGallery(${category.id}, '${category.name}')">
                 <i class="fas ${icon} category-icon"></i>
@@ -501,7 +538,12 @@
 
         currentPhotoIndex = index;
         lightboxImage.src = photoUrl;
-        lightbox.classList.add("active");
+        lightboxImage.style.objectFit = "contain";
+
+        // Ensure image is centered
+        setTimeout(() => {
+          lightbox.classList.add("active");
+        }, 50); // Small delay to ensure image loads properly before showing
 
         // Prevent body scrolling when lightbox is open
         document.body.style.overflow = "hidden";
@@ -584,6 +626,40 @@
           if (photoGrid) {
             photoGrid.innerHTML = "";
 
+            // Create masonry-like layout for photos with larger columns
+            photoGrid.style.columnCount =
+              window.innerWidth > 1400 ? 3 : window.innerWidth > 900 ? 2 : 1;
+            photoGrid.style.columnGap = "2rem";
+
+            // Create a loading message
+            const loadingElement = document.createElement("div");
+            loadingElement.className = "text-center my-5";
+            loadingElement.innerHTML = `<div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading images with their original aspect ratios...</p>`;
+            photoGrid.appendChild(loadingElement);
+
+            // Preload images to get dimensions
+            const preloadPromises = photos.map((photo, index) => {
+              return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                  photo.width = img.width;
+                  photo.height = img.height;
+                  resolve();
+                };
+                img.onerror = () => resolve(); // Continue even if error
+                img.src = photo.imageUrl;
+              });
+            });
+
+            // When all images are preloaded
+            await Promise.all(preloadPromises);
+
+            // Remove loading message
+            photoGrid.innerHTML = "";
+
             photos.forEach((photo, index) => {
               const photoElement = document.createElement("div");
               photoElement.className = "photo-item";
@@ -608,6 +684,15 @@
         }
       });
 
+      // Handle window resize for masonry layout
+      window.addEventListener("resize", function () {
+        const photoGrid = document.getElementById("photoGrid");
+        if (photoGrid && currentPhotos.length > 0) {
+          photoGrid.style.columnCount =
+            window.innerWidth > 1400 ? 3 : window.innerWidth > 900 ? 2 : 1;
+        }
+      });
+
       // Load categories when the page loads
       window.addEventListener("load", () => {
         loadCategories();
@@ -625,6 +710,8 @@
           const featuredPhotosContainer =
             document.getElementById("featuredPhotos");
           featuredPhotosContainer.innerHTML = ""; // Clear existing content
+          featuredPhotosContainer.className =
+            "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
 
           let displayedPhotos = 0;
 
