@@ -12,6 +12,19 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <!-- Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-STPKR72LK4"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-STPKR72LK4");
+    </script>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -323,6 +336,24 @@
       .lightbox-close:hover {
         background: rgba(255, 255, 255, 0.2);
       }
+      .gallery-navbar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.1rem 0 0.4rem 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 0.5rem;
+      }
+      .back-arrow-btn {
+        font-size: 1.1rem;
+      }
+      #galleryView .container {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+      #galleryView .gallery-title {
+        margin-top: 0.5rem;
+      }
     </style>
   </head>
   <body>
@@ -384,6 +415,18 @@
                   Send Message
                 </button>
               </form>
+              <div
+                id="contactSuccess"
+                class="alert alert-success mt-3"
+                style="display: none"
+              >
+                Thank you for your message! I will get back to you soon.
+              </div>
+              <div
+                id="contactError"
+                class="alert alert-danger mt-3"
+                style="display: none"
+              ></div>
             </div>
           </div>
         </div>
@@ -392,6 +435,23 @@
 
     <div id="galleryView">
       <div class="container">
+        <!-- Only back arrow button, no navbar or text -->
+        <button
+          class="back-arrow-btn"
+          onclick="history.back()"
+          style="
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+          "
+        >
+          <i class="fas fa-arrow-left"></i>
+        </button>
         <h1 class="gallery-title" id="galleryTitle"></h1>
         <p class="gallery-description" id="galleryDescription"></p>
 
@@ -479,9 +539,32 @@
               <div class="category-card" onclick="showCategoryGallery(${category.id}, '${category.name}')">
                 <i class="fas ${icon} category-icon"></i>
                 <h3>${category.name}</h3>
+                <div class="category-photo-count" id="category-photo-count-${category.id}" style="color:#888; font-size:1rem; margin-top:0.5rem;">Loading...</div>
               </div>
             `;
             categoriesGrid.appendChild(categoryElement);
+
+            // Fetch photo count for this category
+            fetch(`/api/Photos?categoryId=${category.id}`)
+              .then((response) => response.json())
+              .then((photos) => {
+                const countDiv = document.getElementById(
+                  `category-photo-count-${category.id}`
+                );
+                if (countDiv) {
+                  countDiv.textContent = `${photos.length} photo${
+                    photos.length !== 1 ? "s" : ""
+                  }`;
+                }
+              })
+              .catch(() => {
+                const countDiv = document.getElementById(
+                  `category-photo-count-${category.id}`
+                );
+                if (countDiv) {
+                  countDiv.textContent = `0 photos`;
+                }
+              });
           });
         } catch (error) {
           console.error("Error loading categories:", error);
@@ -704,10 +787,33 @@
       // Handle contact form submission
       document
         .getElementById("contactForm")
-        .addEventListener("submit", function (e) {
+        .addEventListener("submit", async function (e) {
           e.preventDefault();
-          alert("Thank you for your message! I will get back to you soon.");
-          this.reset();
+          const email = document.getElementById("email").value;
+          const message = document.getElementById("message").value;
+          const successDiv = document.getElementById("contactSuccess");
+          const errorDiv = document.getElementById("contactError");
+          successDiv.style.display = "none";
+          errorDiv.style.display = "none";
+          try {
+            const response = await fetch("/api/contact", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, message }),
+            });
+            if (response.ok) {
+              successDiv.style.display = "block";
+              this.reset();
+            } else {
+              const data = await response.json();
+              errorDiv.textContent = data.error || "Failed to send message.";
+              errorDiv.style.display = "block";
+            }
+          } catch (err) {
+            errorDiv.textContent =
+              "Failed to send message. Please try again later.";
+            errorDiv.style.display = "block";
+          }
         });
     </script>
 

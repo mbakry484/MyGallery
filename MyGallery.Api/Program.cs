@@ -99,6 +99,21 @@ if (!Directory.Exists(uploadsPath))
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+// SPA fallback: serve index.html for unknown routes (except API and static files)
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (context.Response.StatusCode == 404 &&
+        !System.IO.Path.HasExtension(context.Request.Path.Value) &&
+        !context.Request.Path.Value.StartsWith("/api"))
+    {
+        context.Request.Path = "/index.html";
+        context.Response.StatusCode = 200;
+        await next();
+    }
+});
+
 // Add MVC routing
 app.UseRouting();
 app.UseEndpoints(endpoints =>
