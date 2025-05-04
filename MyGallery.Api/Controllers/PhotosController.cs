@@ -4,6 +4,7 @@ using MyGallery.Api.Data;
 using MyGallery.Api.DTOs;
 using MyGallery.Api.Entities;
 using MyGallery.Api.Mapping;
+using MyGallery.Api.Services;
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
@@ -16,11 +17,16 @@ namespace MyGallery.Api.Controllers
     {
         private readonly MyGalleryContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly ImgBBService _imgBBService;
 
-        public PhotosController(MyGalleryContext context, IWebHostEnvironment environment)
+        public PhotosController(
+            MyGalleryContext context,
+            IWebHostEnvironment environment,
+            ImgBBService imgBBService)
         {
             _context = context;
             _environment = environment;
+            _imgBBService = imgBBService;
         }
 
         [HttpGet]
@@ -56,41 +62,34 @@ namespace MyGallery.Api.Controllers
                 return BadRequest($"Category with ID {newPhoto.CategoryId} does not exist");
             }
 
-            // Create uploads directory if it doesn't exist
-            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
-            if (!Directory.Exists(uploadsPath))
+            try
             {
-                Directory.CreateDirectory(uploadsPath);
+                // Upload to ImgBB instead of local storage
+                var imageUrl = await _imgBBService.UploadImageAsync(newPhoto.ImageFile);
+
+                // Create photo entity with the ImgBB URL
+                var photo = new Photo
+                {
+                    ImageUrl = imageUrl,
+                    CategoryId = newPhoto.CategoryId
+                };
+
+                // Add to database
+                _context.Photo.Add(photo);
+                await _context.SaveChangesAsync();
+
+                // Retrieve the saved photo with category info for the response
+                var savedPhoto = await _context.Photo
+                    .Include(p => p.Category)
+                    .FirstOrDefaultAsync(p => p.Id == photo.Id);
+
+                // Return created photo as DTO
+                return CreatedAtAction(nameof(GetPhoto), new { id = photo.Id }, savedPhoto.ToPhotoDTO());
             }
-
-            // Generate unique filename
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(newPhoto.ImageFile.FileName)}";
-            var filePath = Path.Combine(uploadsPath, fileName);
-
-            // Save the file
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            catch (Exception ex)
             {
-                await newPhoto.ImageFile.CopyToAsync(stream);
+                return StatusCode(500, $"Error uploading image: {ex.Message}");
             }
-
-            // Create photo entity
-            var photo = new Photo
-            {
-                ImageUrl = $"/uploads/{fileName}",
-                CategoryId = newPhoto.CategoryId
-            };
-
-            // Add to database
-            _context.Photo.Add(photo);
-            await _context.SaveChangesAsync();
-
-            // Retrieve the saved photo with category info for the response
-            var savedPhoto = await _context.Photo
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == photo.Id);
-
-            // Return created photo as DTO
-            return CreatedAtAction(nameof(GetPhoto), new { id = photo.Id }, savedPhoto.ToPhotoDTO());
         }
 
         [HttpGet("{id}")]
@@ -125,42 +124,33 @@ namespace MyGallery.Api.Controllers
                 return BadRequest($"Category with ID {updatePhotoDto.CategoryId} does not exist");
             }
 
-            // If a new file was uploaded
-            if (updatePhotoDto.ImageFile != null && updatePhotoDto.ImageFile.Length > 0)
+            try
             {
-                // Create uploads directory if it doesn't exist
-                var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
-                if (!Directory.Exists(uploadsPath))
+                // If a new file was uploaded
+                if (updatePhotoDto.ImageFile != null && updatePhotoDto.ImageFile.Length > 0)
                 {
-                    Directory.CreateDirectory(uploadsPath);
+                    // Upload to ImgBB instead of local storage
+                    var imageUrl = await _imgBBService.UploadImageAsync(updatePhotoDto.ImageFile);
+
+                    // Update the image URL
+                    photo.ImageUrl = imageUrl;
                 }
 
+                // Update category
+                photo.CategoryId = updatePhotoDto.CategoryId;
+                await _context.SaveChangesAsync();
 
-                // Generate unique filename
-                //hhhh
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(updatePhotoDto.ImageFile.FileName)}";
-                var filePath = Path.Combine(uploadsPath, fileName);
+                // Retrieve the updated photo with category info
+                var updatedPhoto = await _context.Photo
+                    .Include(p => p.Category)
+                    .FirstOrDefaultAsync(p => p.Id == id);
 
-                // Save the file
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await updatePhotoDto.ImageFile.CopyToAsync(stream);
-                }
-
-                // Update the image URL
-                photo.ImageUrl = $"/uploads/{fileName}";
+                return Ok(updatedPhoto.ToPhotoDTO());
             }
-
-            // Update category
-            photo.CategoryId = updatePhotoDto.CategoryId;
-            await _context.SaveChangesAsync();
-
-            // Retrieve the updated photo with category info
-            var updatedPhoto = await _context.Photo
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            return Ok(updatedPhoto.ToPhotoDTO());
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating image: {ex.Message}");
+            }
         }
 
         [HttpDelete("{id}")]
@@ -183,6 +173,42 @@ namespace MyGallery.Api.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(photoDto);
+        }
+
+        [HttpPost("test-imgbb")]
+        public async Task<ActionResult<string>> TestImgBBUpload(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file was uploaded");
+            }
+
+            try
+            {
+                // Test upload to ImgBB
+                var imageUrl = await _imgBBService.UploadImageAsync(file);
+
+                return Ok(new
+                {
+                    Message = "Image uploaded successfully to ImgBB",
+                    Url = imageUrl
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Error = "Error uploading image to ImgBB",
+                    Details = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
+            }
+        }
+
+        [HttpGet("test-imgbb")]
+        public IActionResult TestImgBBPage()
+        {
+            return File("~/imgbb-test.html", "text/html");
         }
     }
 }

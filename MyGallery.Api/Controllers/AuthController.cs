@@ -182,6 +182,6 @@ public class AuthController : Controller
     public IActionResult Logout()
     {
         HttpContext.Session.Remove("IsAdmin");
-        return RedirectToAction("LoginPage");
+        return Redirect("/");
     }
 }

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ImgBB Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        display: none;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      img {
+        max-width: 100%;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ImgBB Integration Test</h1>
+
+    <div class="form-group">
+      <label for="imageFile">Select an image to upload:</label>
+      <input type="file" id="imageFile" accept="image/*" />
+    </div>
+
+    <button onclick="uploadImage()">Upload to ImgBB</button>
+
+    <div id="result"></div>
+
+    <script>
+      async function uploadImage() {
+        const fileInput = document.getElementById("imageFile");
+        const resultDiv = document.getElementById("result");
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+          showResult("Please select an image file.", false);
+          return;
+        }
+
+        const file = fileInput.files[0];
+
+        // Create form data - IMPORTANT: The parameter name should match what the controller expects
+        const formData = new FormData();
+        formData.append("file", file); // This should match the parameter name in TestImgBBUpload method
+
+        try {
+          // Show loading message
+          showResult("Uploading image...", true);
+
+          // Send request to test endpoint
+          const response = await fetch("/api/photos/test-imgbb", {
+            method: "POST",
+            body: formData,
+          });
+
+          // Try to parse the response
+          let data;
+          const text = await response.text();
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            // If parsing fails, show the raw response
+            showResult(
+              `
+              <p><strong>Error:</strong> Failed to parse response</p>
+              <p>Response status: ${response.status}</p>
+              <p>Raw response:</p>
+              <pre>${text}</pre>
+            `,
+              false
+            );
+            return;
+          }
+
+          if (response.ok) {
+            // Show success message with image
+            showResult(
+              `
+                <p><strong>Success!</strong> Image uploaded to ImgBB.</p>
+                <p>URL: <a href="${data.url}" target="_blank">${data.url}</a></p>
+                <img src="${data.url}" alt="Uploaded image">
+              `,
+              true
+            );
+          } else {
+            // Show error message
+            showResult(
+              `
+                <p><strong>Error:</strong> ${
+                  data.error || "Failed to upload image"
+                }</p>
+                <p>${data.details || ""}</p>
+              `,
+              false
+            );
+          }
+        } catch (error) {
+          showResult(
+            `
+              <p><strong>Error:</strong> ${error.message}</p>
+            `,
+            false
+          );
+        }
+      }
+
+      function showResult(message, isSuccess) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = message;
+        resultDiv.style.display = "block";
+
+        if (isSuccess) {
+          resultDiv.className = "success";
+        } else {
+          resultDiv.className = "error";
+        }
+      }
+    </script>
+  </body>
+</html>

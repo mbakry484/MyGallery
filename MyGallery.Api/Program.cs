@@ -2,10 +2,15 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using MyGallery.Api.Data;
 using Microsoft.AspNetCore.Http.Features;
+using MyGallery.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("MyGallery");
 builder.Services.AddSqlite<MyGalleryContext>(connString);
+
+// Register HttpClient and ImgBB service
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ImgBBService>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

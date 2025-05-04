@@ -459,42 +459,34 @@
       .container {
         max-width: 1400px; /* Increased from default 1200px */
       }
+
+      .logout-fixed-btn {
+        position: fixed;
+        top: 24px;
+        right: 32px;
+        z-index: 2000;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.5rem 1.2rem;
+        border-radius: 24px;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background 0.2s;
+      }
+      .logout-fixed-btn:hover {
+        background-color: #b52a37;
+      }
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container">
-        <a class="navbar-brand" href="#">Mohamed Bakry</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#about">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#gallery">Gallery</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#contact">Contact</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link logout-link" onclick="logout()">Logout</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
+    <button id="logoutBtn" class="logout-fixed-btn" onclick="logout()">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
     <div id="mainView">
       <section class="hero-section">
         <div class="container">
@@ -507,9 +499,11 @@
         <div class="container">
           <div class="admin-header">
             <h2 style="font-size: 2.5rem">Categories</h2>
-            <button id="addCategoryBtn" onclick="openAddCategoryModal()">
-              <i class="fas fa-plus"></i> Add Category
-            </button>
+            <div>
+              <button id="addCategoryBtn" onclick="openAddCategoryModal()">
+                <i class="fas fa-plus"></i> Add Category
+              </button>
+            </div>
           </div>
           <div
             class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
@@ -963,12 +957,12 @@
             if (response.redirected) {
               window.location = response.url;
             } else {
-              window.location = "/login";
+              window.location = "/";
             }
           })
           .catch((error) => {
             console.error("Logout error:", error);
-            window.location = "/login";
+            window.location = "/";
           });
       }
     </script>
