@@ -164,7 +164,7 @@ public class AuthController : Controller
             return RedirectToAction("LoginPage");
         }
 
-        return File("~/admin/dashboard.html", "text/html");
+        return File("~/admin/gallery.html", "text/html");
     }
 
     [HttpGet("/Login")]
