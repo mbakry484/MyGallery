@@ -6,7 +6,8 @@ using MyGallery.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("MyGallery");
-builder.Services.AddSqlite<MyGalleryContext>(connString);
+builder.Services.AddDbContext<MyGalleryContext>(options =>
+    options.UseSqlServer(connString));
 
 // Register HttpClient and ImgBB service
 builder.Services.AddHttpClient();

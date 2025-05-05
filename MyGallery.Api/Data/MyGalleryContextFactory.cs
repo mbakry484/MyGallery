@@ -19,7 +19,7 @@ namespace MyGallery.Api
             var connectionString = configuration.GetConnectionString("MyGallery");
 
             var optionsBuilder = new DbContextOptionsBuilder<MyGalleryContext>();
-            optionsBuilder.UseSqlite(connectionString);
+            optionsBuilder.UseSqlServer(connectionString);
 
             return new MyGalleryContext(optionsBuilder.Options);
         }
