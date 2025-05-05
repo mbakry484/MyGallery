@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - MyGallery</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      header {
+        background-color: #333;
+        color: white;
+        padding: 1rem;
+        text-align: center;
+      }
+      .dashboard-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .logout-btn {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        float: right;
+      }
+      .logout-btn:hover {
+        background-color: #d32f2f;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>MyGallery Admin Dashboard</h1>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="dashboard-container">
+      <h2>Welcome to the Admin Dashboard</h2>
+      <p>You have successfully logged in as an administrator.</p>
+      <p>Use this dashboard to manage your gallery items.</p>
+    </div>
+
+    <script>
+      function logout() {
+        fetch("/Logout", {
+          method: "POST",
+          credentials: "include",
+        })
+          .then((response) => {
+            if (response.redirected) {
+              window.location = response.url;
+            } else {
+              window.location = "/login";
+            }
+          })
+          .catch((error) => {
+            console.error("Logout error:", error);
+            window.location = "/login";
+          });
+      }
+    </script>
+  </body>
+</html>
